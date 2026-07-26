@@ -1,0 +1,47 @@
+# E2E stack for the provider: a mock Gitea REST API (run from the sibling plugin
+# repo) + a Vault dev server with the gitea plugin mounted. Bind mounts use ":z"
+# for SELinux (Fedora/RHEL).
+services:
+  gitea:
+    image: golang:1.25-alpine
+    working_dir: /src
+    environment:
+      MOCKGITEA_ADDR: ":3000"
+      MOCKGITEA_ADMIN_USER: "bot-admin"
+      MOCKGITEA_ADMIN_PASS: "seed-password"
+      GOFLAGS: "-mod=mod"
+    # PLUGIN_SRC is the sibling vault-plugin-secrets-gitea checkout, which ships
+    # the mock Gitea server under test/mockgitea.
+    command: ["go", "run", "./test/mockgitea"]
+    volumes:
+      - ${PLUGIN_SRC:-../vault-plugin-secrets-gitea}:/src:ro,z
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  vault:
+    image: hashicorp/vault:1.18
+    depends_on:
+      gitea:
+        condition: service_healthy
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_TOKEN: root
+    command: ["server", "-dev", "-dev-listen-address=0.0.0.0:8200", "-config=/vault/vault.hcl"]
+    volumes:
+      - ./plugins:/vault/plugins:ro,z
+      - ./vault/vault.hcl:/vault/vault.hcl:ro,z
+    ports:
+      - "8200:8200"
+    healthcheck:
+      test: ["CMD", "vault", "status", "-address=http://127.0.0.1:8200"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
