@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     gitea = {
-      source = "git.unkin.net/unkin/giteavaultsecret"
+      source = "IUCLabs/vault-secrets-gitea"
     }
   }
 }
@@ -22,10 +22,10 @@ resource "gitea_secret_backend" "gitea" {
   admin_password = "seed-password"
 }
 
-resource "gitea_secret_backend_role" "teabot" {
+resource "gitea_secret_backend_role" "ci-bot" {
   backend  = gitea_secret_backend.gitea.path
-  name     = "teabot"
-  username = "teabot"
+  name     = "ci-bot"
+  username = "ci-bot"
   scopes   = ["read:repository", "write:issue"]
   ttl      = 3600
   max_ttl  = 86400

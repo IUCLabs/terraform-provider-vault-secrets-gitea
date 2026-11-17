@@ -53,10 +53,10 @@ func TestSplitBackendName(t *testing.T) {
 		id, marker, backend, name string
 		ok                        bool
 	}{
-		{"gitea/roles/teabot", "roles", "gitea", "teabot", true},
+		{"gitea/roles/ci-bot", "roles", "gitea", "ci-bot", true},
 		{"team/gitea/roles/ci", "roles", "team/gitea", "ci", true},
 		{"gitea/roles/", "roles", "", "", false},
-		{"/roles/teabot", "roles", "", "", false},
+		{"/roles/ci-bot", "roles", "", "", false},
 		{"nomarker", "roles", "", "", false},
 	}
 	for _, c := range cases {

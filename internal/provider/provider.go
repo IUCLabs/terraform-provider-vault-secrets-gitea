@@ -29,7 +29,7 @@ func New(version string) func() provider.Provider {
 }
 
 func (p *giteaProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	// The provider's source address is git.unkin.net/unkin/giteavaultsecret, but
+	// The provider's source address is IUCLabs/vault-secrets-gitea, but
 	// its resources are prefixed "gitea_" (declare it in required_providers under
 	// the local name "gitea"), mirroring how google-beta ships google_*.
 	resp.TypeName = "gitea"

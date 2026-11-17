@@ -1,4 +1,4 @@
-/terraform-provider-giteavaultsecret
+/terraform-provider-vault-secrets-gitea
 *.zip
 *.out
 *.test

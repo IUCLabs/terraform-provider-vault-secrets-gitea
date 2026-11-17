@@ -50,7 +50,7 @@ func toInt64(v interface{}) (int64, bool) {
 }
 
 // splitBackendName splits an import ID of the form "<backend>/<marker>/<name>"
-// (e.g. "rancher/roles/ci") into its backend and name parts.
+// (e.g. "gitea/roles/ci") into its backend and name parts.
 func splitBackendName(id, marker string) (backend, name string, ok bool) {
 	sep := "/" + marker + "/"
 	idx := strings.LastIndex(id, sep)

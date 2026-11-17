@@ -51,7 +51,7 @@ func (r *secretBackendResource) Metadata(_ context.Context, req resource.Metadat
 
 func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Mounts the Gitea secrets engine and writes its connection config and seeded admin credentials.",
+		Description: "Mounts the Gitea secrets engine and writes its connection config and seeded admin credentials. `admin_password` and `ca_cert` are write-only and kept from state; after an out-of-band `config/rotate-root`, update `admin_password` before re-applying or Terraform will set the old password back.",
 		Attributes: map[string]schema.Attribute{
 			"path": schema.StringAttribute{
 				Description: "Mount path for the Gitea secrets engine (e.g. \"gitea\").",
@@ -61,7 +61,7 @@ func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaReque
 				},
 			},
 			"plugin": schema.StringAttribute{
-				Description: "Registered plugin name/type to mount.",
+				Description: "Registered plugin name/type to mount. Defaults to `vault-plugin-secrets-gitea`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString(defaultPluginType),
@@ -76,7 +76,7 @@ func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaReque
 				Default:     stringdefault.StaticString(""),
 			},
 			"gitea_url": schema.StringAttribute{
-				Description: "Base URL of the Gitea server (e.g. https://git.example.com).",
+				Description: "Base URL of the Gitea server (e.g. https://gitea.example.com).",
 				Required:    true,
 			},
 			"admin_username": schema.StringAttribute{
@@ -93,7 +93,7 @@ func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 			},
 			"admin_source_id": schema.Int64Attribute{
-				Description: "Authentication source ID of the admin user for rotate-root (0 for local users).",
+				Description: "Authentication source ID of the admin user for rotate-root. Defaults to `0` (local users).",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(0),
@@ -103,13 +103,13 @@ func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 			},
 			"tls_skip_verify": schema.BoolAttribute{
-				Description: "Skip TLS verification of the Gitea server (not recommended).",
+				Description: "Skip TLS verification of the Gitea server (not recommended). Defaults to `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"request_timeout_seconds": schema.Int64Attribute{
-				Description: "HTTP timeout in seconds for calls from the plugin to Gitea.",
+				Description: "HTTP timeout in seconds for calls from the plugin to Gitea. Defaults to `30`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(30),

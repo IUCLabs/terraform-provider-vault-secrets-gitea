@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# End-to-end test for terraform-provider-giteavaultsecret.
+# End-to-end test for terraform-provider-vault-secrets-gitea.
 #
 # Builds the sibling gitea plugin and this provider, boots Vault + a mock Gitea
 # REST API in Docker, then runs a real `terraform apply` through the provider to
@@ -17,7 +17,7 @@ COMPOSE="docker compose -f ${COMPOSE_FILE}"
 TF="${TF:-terraform}"
 E2E_DIR="${ROOT_DIR}/test/e2e"
 PLUGIN_BIN="vault-plugin-secrets-gitea"
-PROVIDER_BIN="terraform-provider-giteavaultsecret"
+PROVIDER_BIN="terraform-provider-vault-secrets-gitea"
 
 GITEA_ADDR="http://127.0.0.1:3000"
 export VAULT_ADDR="http://127.0.0.1:8200"
@@ -67,7 +67,7 @@ blue "Writing terraform dev_overrides config"
 cat > "${ROOT_DIR}/test/dev.tfrc" <<EOF
 provider_installation {
   dev_overrides {
-    "git.unkin.net/unkin/giteavaultsecret" = "${ROOT_DIR}"
+    "IUCLabs/vault-secrets-gitea" = "${ROOT_DIR}"
   }
   direct {}
 }
@@ -91,17 +91,17 @@ green "apply succeeded"
 blue "Verifying the mount and role exist"
 ${COMPOSE} exec -T vault vault secrets list 2>/dev/null | grep -q '^gitea/' \
   || fail "gitea mount not found after apply"
-${COMPOSE} exec -T vault vault read gitea/roles/teabot >/dev/null \
-  || fail "role teabot not found after apply"
+${COMPOSE} exec -T vault vault read gitea/roles/ci-bot >/dev/null \
+  || fail "role ci-bot not found after apply"
 green "mount + role present"
 
 blue "Minting a token from the terraform-managed role"
-JSON="$(${COMPOSE} exec -T vault vault read -format=json gitea/creds/teabot)"
+JSON="$(${COMPOSE} exec -T vault vault read -format=json gitea/creds/ci-bot)"
 TOKEN="$(printf '%s' "${JSON}" | jq_field '["data"]["token"]')"
 USER="$(printf '%s' "${JSON}" | jq_field '["data"]["username"]')"
 LEASE="$(printf '%s' "${JSON}" | jq_field '["lease_id"]')"
 [ -n "${TOKEN}" ] || fail "no token minted"
-[ "${USER}" = "teabot" ] || fail "unexpected username ${USER}"
+[ "${USER}" = "ci-bot" ] || fail "unexpected username ${USER}"
 green "minted token ${TOKEN:0:10}... for ${USER} (lease ${LEASE})"
 
 blue "Revoking the lease"

@@ -1,4 +1,4 @@
-module git.unkin.net/unkin/terraform-provider-giteavaultsecret
+module github.com/IUCLabs/terraform-provider-vault-secrets-gitea
 
 go 1.25
 
